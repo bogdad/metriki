@@ -49,6 +49,7 @@
 //! you have multiple r2d2 pools in your application.
 //!
 use std::sync::Arc;
+use std::time::{Instant, SystemTime};
 
 use derive_builder::Builder;
 #[cfg(not(feature = "diesel"))]
@@ -77,8 +78,8 @@ pub struct MetrikiHandler {
 impl HandleEvent for MetrikiHandler {
     fn handle_checkout(&self, event: CheckoutEvent) {
         self.registry
-            .meter(&format!("{}.checkout", self.name))
-            .mark();
+            .meter(&format!("{}.checkout", self.name), SystemTime::now())
+            .mark(Instant::now());
         self.registry
             .histogram(&format!("{}.wait", self.name))
             .update(event.duration().as_millis() as u64);
@@ -86,8 +87,8 @@ impl HandleEvent for MetrikiHandler {
 
     fn handle_timeout(&self, _event: TimeoutEvent) {
         self.registry
-            .meter(&format!("{}.timeout", self.name))
-            .mark();
+            .meter(&format!("{}.timeout", self.name), SystemTime::now())
+            .mark(Instant::now());
     }
 
     fn handle_checkin(&self, event: CheckinEvent) {

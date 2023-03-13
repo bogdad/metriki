@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use derive_builder::Builder;
 
@@ -95,15 +95,15 @@ impl RiemannReporter {
         vec![
             self.event()
                 .service(format!("{}.m1", name))
-                .metric_d(meter.m1_rate())
+                .metric_d(meter.m1_rate(Instant::now()))
                 .build(),
             self.event()
                 .service(format!("{}.m5", name))
-                .metric_d(meter.m5_rate())
+                .metric_d(meter.m5_rate(Instant::now()))
                 .build(),
             self.event()
                 .service(format!("{}.m15", name))
-                .metric_d(meter.m15_rate())
+                .metric_d(meter.m15_rate(Instant::now()))
                 .build(),
         ]
     }
@@ -197,15 +197,15 @@ impl RiemannReporter {
                 .build(),
             self.event()
                 .service(format!("{}.m1", name))
-                .metric_d(rate.m1_rate())
+                .metric_d(rate.m1_rate(Instant::now()))
                 .build(),
             self.event()
                 .service(format!("{}.m5", name))
-                .metric_d(rate.m5_rate())
+                .metric_d(rate.m5_rate(Instant::now()))
                 .build(),
             self.event()
                 .service(format!("{}.m15", name))
-                .metric_d(rate.m15_rate())
+                .metric_d(rate.m15_rate(Instant::now()))
                 .build(),
         ]
     }

@@ -13,6 +13,7 @@
 //! apis.
 //!
 use std::sync::Arc;
+use std::time::{Instant, SystemTime};
 
 use tracing::Subscriber;
 use tracing::{Event, Id};
@@ -50,14 +51,14 @@ where
     fn on_event(&self, event: &Event<'_>, _ctx: Context<'_, S>) {
         // register event as meter
         // FIXME: better event metrics name
-        self.registry.meter(event.metadata().name()).mark();
+        self.registry.meter(event.metadata().name(), SystemTime::now()).mark(Instant::now());
     }
 
     fn on_enter(&self, _id: &Id, ctx: Context<'_, S>) {
         if let Some(span_ref) = ctx.lookup_current() {
             let metadata = span_ref.metadata();
             let name = metadata.name();
-            let timer = self.registry.timer(name);
+            let timer = self.registry.timer(name, SystemTime::now());
             let timer_ctx = TimerContextArc::start(timer);
 
             span_ref.extensions_mut().insert(timer_ctx);

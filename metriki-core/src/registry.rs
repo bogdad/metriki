@@ -2,6 +2,7 @@ use dashmap::DashMap;
 use std::collections::HashMap;
 use std::fmt::{self, Debug, Formatter};
 use std::sync::Arc;
+use std::time::SystemTime;
 
 #[cfg(feature = "ser")]
 use serde::ser::SerializeMap;
@@ -53,7 +54,7 @@ impl MetricsRegistry {
     /// # Panics
     ///
     /// This function may panic if a metric is already registered with type other than meter.
-    pub fn meter(&self, name: &str) -> Arc<Meter> {
+    pub fn meter(&self, name: &str, start_time: SystemTime) -> Arc<Meter> {
         let meter = {
             self.inner
                 .metrics
@@ -70,7 +71,7 @@ impl MetricsRegistry {
         if let Some(m) = meter {
             m
         } else {
-            let meter = Arc::new(Meter::new());
+            let meter = Arc::new(Meter::new(start_time));
             self.inner
                 .metrics
                 .insert(name.to_owned(), Metric::Meter(meter.clone()));
@@ -151,7 +152,7 @@ impl MetricsRegistry {
     /// # Panics
     ///
     /// This function may panic if a metric is already registered with type other than counter.
-    pub fn timer(&self, name: &str) -> Arc<Timer> {
+    pub fn timer(&self, name: &str, start_time: SystemTime) -> Arc<Timer> {
         let timer = {
             self.inner
                 .metrics
@@ -168,7 +169,7 @@ impl MetricsRegistry {
         if let Some(m) = timer {
             m
         } else {
-            let timer = Arc::new(Timer::new());
+            let timer = Arc::new(Timer::new(start_time));
             self.inner
                 .metrics
                 .insert(name.to_owned(), Metric::Timer(timer.clone()));
@@ -239,6 +240,7 @@ impl MetricsRegistry {
 
 #[cfg(test)]
 mod test {
+    use std::time::Instant;
     use crate::filter::MetricsFilter;
     use crate::metrics::Metric;
     use crate::registry::MetricsRegistry;
@@ -247,10 +249,10 @@ mod test {
     fn test_metrics_filter() {
         let mut registry = MetricsRegistry::new();
 
-        registry.meter("l1.tomcat.request").mark();
-        registry.meter("l1.jetty.request").mark();
-        registry.meter("l2.tomcat.request").mark();
-        registry.meter("l2.jetty.request").mark();
+        registry.meter("l1.tomcat.request").mark(Instant::now());
+        registry.meter("l1.jetty.request").mark(Instant::now());
+        registry.meter("l2.tomcat.request").mark(Instant::now());
+        registry.meter("l2.jetty.request").mark(Instant::now());
 
         struct NameFilter;
         impl MetricsFilter for NameFilter {

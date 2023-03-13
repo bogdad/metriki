@@ -19,36 +19,36 @@ pub struct Meter {
 }
 
 impl Meter {
-    pub(crate) fn new() -> Meter {
+    pub(crate) fn new(start_time: SystemTime) -> Meter {
         Meter {
             moving_avarages: ExponentiallyWeightedMovingAverages::new(),
             count: AtomicU64::from(0),
-            start_time: SystemTime::now(),
+            start_time: start_time,
         }
     }
 
-    pub fn mark(&self) {
-        self.mark_n(1)
+    pub fn mark(&self, current_tick: Instant) {
+        self.mark_n(1, current_tick)
     }
 
-    pub fn mark_n(&self, n: u64) {
+    pub fn mark_n(&self, n: u64, current_tick: Instant) {
         self.count.fetch_add(n, Ordering::Relaxed);
-        self.moving_avarages.tick_if_needed();
+        self.moving_avarages.tick_if_needed(current_tick);
         self.moving_avarages.update(n);
     }
 
-    pub fn m1_rate(&self) -> f64 {
-        self.moving_avarages.tick_if_needed();
+    pub fn m1_rate(&self, current_tick: Instant) -> f64 {
+        self.moving_avarages.tick_if_needed(current_tick);
         self.moving_avarages.m1_rate()
     }
 
-    pub fn m5_rate(&self) -> f64 {
-        self.moving_avarages.tick_if_needed();
+    pub fn m5_rate(&self, current_tick: Instant) -> f64 {
+        self.moving_avarages.tick_if_needed(current_tick);
         self.moving_avarages.m5_rate()
     }
 
-    pub fn m15_rate(&self) -> f64 {
-        self.moving_avarages.tick_if_needed();
+    pub fn m15_rate(&self, current_tick: Instant) -> f64 {
+        self.moving_avarages.tick_if_needed(current_tick);
         self.moving_avarages.m15_rate()
     }
 
@@ -163,9 +163,8 @@ impl ExponentiallyWeightedMovingAverages {
         self.m15.update(n);
     }
 
-    fn tick_if_needed(&self) {
+    fn tick_if_needed(&self, current_tick: Instant) {
         let previous_tick = self.last_tick.load();
-        let current_tick = Instant::now();
 
         let tick_age = (current_tick - previous_tick).as_millis() as u64;
 

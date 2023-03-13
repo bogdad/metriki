@@ -13,12 +13,13 @@ pub fn global_registry() -> Arc<MetricsRegistry> {
 
 #[cfg(test)]
 mod test {
+    use std::time::{Instant, SystemTime};
     use super::global_registry;
 
     #[test]
     fn test_global_registry() {
         let registry = global_registry();
-        registry.meter("hello").mark();
+        registry.meter("hello", SystemTime::now()).mark(Instant::now());
 
         assert!(registry.snapshots().len() > 0);
     }

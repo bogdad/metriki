@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::SystemTime;
 
 #[cfg(feature = "ser")]
 use serde::{Serialize, Serializer};
@@ -20,13 +21,13 @@ pub enum Metric {
 
 impl Metric {
     /// Create default meter
-    pub fn meter() -> Arc<Meter> {
-        Meter::new().into()
+    pub fn meter(start_time: SystemTime) -> Arc<Meter> {
+        Meter::new(start_time).into()
     }
 
     /// Create default timer
-    pub fn timer() -> Arc<Timer> {
-        Timer::new().into()
+    pub fn timer(start_time: SystemTime) -> Arc<Timer> {
+        Timer::new(start_time).into()
     }
 
     /// Create gauge with given function
