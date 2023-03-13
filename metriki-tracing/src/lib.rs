@@ -13,6 +13,7 @@
 //! apis.
 //!
 use std::sync::Arc;
+use std::time::Instant;
 
 use tracing::Subscriber;
 use tracing::{Event, Id};
@@ -50,7 +51,7 @@ where
     fn on_event(&self, event: &Event<'_>, _ctx: Context<'_, S>) {
         // register event as meter
         // FIXME: better event metrics name
-        self.registry.meter(event.metadata().name()).mark();
+        self.registry.meter(event.metadata().name()).mark(Instant::now());
     }
 
     fn on_enter(&self, _id: &Id, ctx: Context<'_, S>) {

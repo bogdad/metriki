@@ -44,7 +44,7 @@ impl TimerContextArc {
     /// Start a timer context for recording that started at given time.
     /// The returned `TimerContext` can be stopped or dropped to record its timing.
     pub fn start_at(timer: Arc<Timer>, start_at: Instant) -> TimerContextArc {
-        timer.rate.mark();
+        timer.rate.mark(Instant::now());
         TimerContextArc { start_at, timer }
     }
 
@@ -74,7 +74,7 @@ impl Timer {
     /// Start a timer context for recording that started at given time.
     /// The returned `TimerContext` can be stopped or dropped to record its timing.
     pub fn start_at(&self, start_at: Instant) -> TimerContext {
-        self.rate.mark();
+        self.rate.mark(Instant::now());
         TimerContext {
             start_at,
             timer: self,

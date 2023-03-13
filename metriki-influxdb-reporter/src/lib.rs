@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::sync::Arc;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 use derive_builder::Builder;
 use influxdb::{Client, InfluxDbWriteable, Timestamp, WriteQuery};
@@ -113,9 +113,9 @@ impl InfluxDbReporter {
 
     fn report_meter(&self, name: &str, meter: &Meter) -> WriteQuery {
         self.with_query(name)
-            .add_field("m1", meter.m1_rate())
-            .add_field("m5", meter.m5_rate())
-            .add_field("m15", meter.m15_rate())
+            .add_field("m1", meter.m1_rate(Instant::now()))
+            .add_field("m5", meter.m5_rate(Instant::now()))
+            .add_field("m15", meter.m15_rate(Instant::now()))
     }
 
     fn report_gauge(&self, name: &str, gauge: &Gauge) -> WriteQuery {
@@ -152,8 +152,8 @@ impl InfluxDbReporter {
             .add_field("min", latency.min())
             .add_field("max", latency.max())
             .add_field("mean", latency.mean())
-            .add_field("m1", rate.m1_rate())
-            .add_field("m5", rate.m5_rate())
-            .add_field("m15", rate.m15_rate())
+            .add_field("m1", rate.m1_rate(Instant::now()))
+            .add_field("m5", rate.m5_rate(Instant::now()))
+            .add_field("m15", rate.m15_rate(Instant::now()))
     }
 }

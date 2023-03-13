@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::net::UdpSocket;
 use std::sync::Arc;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use cadence::prelude::*;
 use cadence::{Metric as StatsdMetric, MetricBuilder, MetricError, StatsdClient, UdpMetricSink};
@@ -74,9 +74,9 @@ impl StatsdReporter {
     }
 
     fn report_meter(&self, name: &str, meter: &Meter, client: &StatsdClient) {
-        self.send(client.meter_with_tags(&format!("{}.m1_rate", name), meter.m1_rate() as u64));
-        self.send(client.meter_with_tags(&format!("{}.m5_rate", name), meter.m5_rate() as u64));
-        self.send(client.meter_with_tags(&format!("{}.m15_rate", name), meter.m15_rate() as u64));
+        self.send(client.meter_with_tags(&format!("{}.m1_rate", name), meter.m1_rate(Instant::now()) as u64));
+        self.send(client.meter_with_tags(&format!("{}.m5_rate", name), meter.m5_rate(Instant::now()) as u64));
+        self.send(client.meter_with_tags(&format!("{}.m15_rate", name), meter.m15_rate(Instant::now()) as u64));
         self.send(client.meter_with_tags(&format!("{}.mean_rate", name), meter.mean_rate() as u64));
     }
 
@@ -115,9 +115,9 @@ impl StatsdReporter {
         self.send(client.histogram_with_tags(&format!("{}.mean", name), latency.mean()));
         self.send(client.histogram_with_tags(&format!("{}.count", name), latency.count()));
 
-        self.send(client.meter_with_tags(&format!("{}.m1_rate", name), rate.m1_rate() as u64));
-        self.send(client.meter_with_tags(&format!("{}.m5_rate", name), rate.m5_rate() as u64));
-        self.send(client.meter_with_tags(&format!("{}.m15_rate", name), rate.m15_rate() as u64));
+        self.send(client.meter_with_tags(&format!("{}.m1_rate", name), rate.m1_rate(Instant::now()) as u64));
+        self.send(client.meter_with_tags(&format!("{}.m5_rate", name), rate.m5_rate(Instant::now()) as u64));
+        self.send(client.meter_with_tags(&format!("{}.m15_rate", name), rate.m15_rate(Instant::now()) as u64));
         self.send(client.meter_with_tags(&format!("{}.mean_rate", name), rate.mean_rate() as u64));
     }
 }

@@ -239,6 +239,7 @@ impl MetricsRegistry {
 
 #[cfg(test)]
 mod test {
+    use std::time::Instant;
     use crate::filter::MetricsFilter;
     use crate::metrics::Metric;
     use crate::registry::MetricsRegistry;
@@ -247,10 +248,10 @@ mod test {
     fn test_metrics_filter() {
         let mut registry = MetricsRegistry::new();
 
-        registry.meter("l1.tomcat.request").mark();
-        registry.meter("l1.jetty.request").mark();
-        registry.meter("l2.tomcat.request").mark();
-        registry.meter("l2.jetty.request").mark();
+        registry.meter("l1.tomcat.request").mark(Instant::now());
+        registry.meter("l1.jetty.request").mark(Instant::now());
+        registry.meter("l2.tomcat.request").mark(Instant::now());
+        registry.meter("l2.jetty.request").mark(Instant::now());
 
         struct NameFilter;
         impl MetricsFilter for NameFilter {

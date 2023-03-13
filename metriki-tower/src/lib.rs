@@ -7,6 +7,7 @@
 
 use std::sync::Arc;
 use std::task::{Context, Poll};
+use std::time::Instant;
 
 use derive_builder::Builder;
 use futures::{FutureExt, TryFutureExt};
@@ -59,7 +60,7 @@ where
                 resp
             })
             .map_err(move |e| {
-                registry.meter(&format!("{}.error", name)).mark();
+                registry.meter(&format!("{}.error", name)).mark(Instant::now());
                 e
             });
 
