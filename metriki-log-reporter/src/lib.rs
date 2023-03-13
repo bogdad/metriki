@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use derive_builder::Builder;
 use log::{log, Level};
@@ -39,14 +39,14 @@ impl LogReporter {
     }
 
     fn report_meter(&self, name: &str, meter: &Meter) {
-        log!(self.level, "{}{}.m1={}", self.prefix, name, meter.m1_rate());
-        log!(self.level, "{}{}.m5={}", self.prefix, name, meter.m5_rate());
+        log!(self.level, "{}{}.m1={}", self.prefix, name, meter.m1_rate(Instant::now()));
+        log!(self.level, "{}{}.m5={}", self.prefix, name, meter.m5_rate(Instant::now()));
         log!(
             self.level,
             "{}{}.m15={}",
             self.prefix,
             name,
-            meter.m15_rate()
+            meter.m15_rate(Instant::now())
         );
         log!(
             self.level,

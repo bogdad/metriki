@@ -7,6 +7,7 @@
 
 use std::sync::Arc;
 use std::task::{Context, Poll};
+use std::time::{Instant, SystemTime};
 
 use derive_builder::Builder;
 use futures::{FutureExt, TryFutureExt};
@@ -48,7 +49,7 @@ where
     fn call(&mut self, req: R) -> Self::Future {
         let registry = self.registry.clone();
         let name = self.name();
-        let timer = registry.timer(&name);
+        let timer = registry.timer(&name, SystemTime::now());
         let timer_ctx = TimerContextArc::start(timer);
 
         let f = self
@@ -59,7 +60,7 @@ where
                 resp
             })
             .map_err(move |e| {
-                registry.meter(&format!("{}.error", name)).mark();
+                registry.meter(&format!("{}.error", name), SystemTime::now()).mark(Instant::now());
                 e
             });
 

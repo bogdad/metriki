@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use std::time::Instant;
+use std::time::{Instant, SystemTime};
 
 #[cfg(feature = "ser")]
 use serde::ser::SerializeMap;
@@ -44,7 +44,7 @@ impl TimerContextArc {
     /// Start a timer context for recording that started at given time.
     /// The returned `TimerContext` can be stopped or dropped to record its timing.
     pub fn start_at(timer: Arc<Timer>, start_at: Instant) -> TimerContextArc {
-        timer.rate.mark();
+        timer.rate.mark(Instant::now());
         TimerContextArc { start_at, timer }
     }
 
@@ -58,9 +58,9 @@ impl TimerContextArc {
 }
 
 impl Timer {
-    pub(crate) fn new() -> Timer {
+    pub(crate) fn new(start_time: SystemTime) -> Timer {
         Timer {
-            rate: Meter::new(),
+            rate: Meter::new(start_time),
             latency: Histogram::new(),
         }
     }
@@ -74,7 +74,7 @@ impl Timer {
     /// Start a timer context for recording that started at given time.
     /// The returned `TimerContext` can be stopped or dropped to record its timing.
     pub fn start_at(&self, start_at: Instant) -> TimerContext {
-        self.rate.mark();
+        self.rate.mark(Instant::now());
         TimerContext {
             start_at,
             timer: self,
@@ -151,13 +151,13 @@ impl Serialize for Timer {
 
 #[cfg(test)]
 mod test {
-    use std::time::Duration;
+    use std::time::{Duration, SystemTime};
 
     use super::Timer;
 
     #[test]
     fn test_drop_timer_context() {
-        let timer = Timer::new();
+        let timer = Timer::new(SystemTime::now());
         // traced block
         let t = timer.start();
         t.stop();
@@ -174,7 +174,7 @@ mod test {
 
     #[test]
     fn test_scoped_tiemr() {
-        let timer = Timer::new();
+        let timer = Timer::new(SystemTime::now());
 
         timer.scoped(|| {
             std::thread::sleep(Duration::from_millis(10));
